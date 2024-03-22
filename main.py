@@ -39,10 +39,10 @@ def main():
 	plt.contour(
 		x, y, np.sqrt(Z).T, levels=np.arange(0, np.max(Z), .3),
 		colors="k", linewidths=.5, zorder=20)
-	plt.plot(points_GD[:, 0], points_GD[:, 1], "#0c2766", zorder=30)
-	plt.scatter(points_GD[::2, 0], points_GD[::2, 1], c="#0c2766", zorder=31)
-	plt.plot(points_HMC[:, 0], points_HMC[:, 1], "#0c2766", zorder=32)
-	plt.scatter(points_HMC[::50, 0], points_HMC[::50, 1], c="#0c2766", zorder=33)
+	plt.plot(points_GD[:, 0], points_GD[:, 1], "#0e4c62", zorder=30)
+	plt.scatter(points_GD[::2, 0], points_GD[::2, 1], c="#0e4c62", marker="v", zorder=31)
+	plt.plot(points_HMC[:, 0], points_HMC[:, 1], "#46014f", zorder=32)
+	plt.scatter(points_HMC[::50, 0], points_HMC[::50, 1], c="#46014f", marker="o", zorder=33)
 	plt.xlim(x[0], x[-1])
 	plt.ylim(y[0], y[-1])
 	plt.xticks([])
