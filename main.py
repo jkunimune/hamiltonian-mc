@@ -13,8 +13,8 @@ TIME_STEP = .01
 
 
 def main():
-	x = np.linspace(-1.3, 1.7, 201)
-	y = np.linspace(-0.65, 0.9, 201)
+	x = np.linspace(-0.9, 1.3, 201)
+	y = np.linspace(-0.55, 0.6, 201)
 	X, Y = np.meshgrid(x, y, indexing="ij")
 	angle = .25
 	X_rot = X*np.cos(angle) - (Y + .1)*np.sin(angle)
