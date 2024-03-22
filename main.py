@@ -1,4 +1,5 @@
 import math
+import os
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -10,11 +11,14 @@ np.random.seed(10)
 
 
 TIME_STEP = .01
+STEPS_PER_FRAME = 2
+GD_COLOR = "#0e4c62"
+HMC_COLOR = "#46014f"
 
 
 def main():
 	x = np.linspace(-0.9, 1.3, 201)
-	y = np.linspace(-0.55, 0.6, 201)
+	y = np.linspace(-0.55, 0.6, 101)
 	X, Y = np.meshgrid(x, y, indexing="ij")
 	angle = .25
 	X_rot = X*np.cos(angle) - (Y + .1)*np.sin(angle)
@@ -30,31 +34,60 @@ def main():
 	points_GD = gradient_descent(grad_x_func, grad_y_func, start)
 	points_HMC = hamiltonian_monte_carlo(cost_func, grad_x_func, grad_y_func, start)
 
-	plt.imshow(
-		np.exp(-Z).T, extent=(
-			x[0] - (x[1] - x[0])/2, x[-1] + (x[1] - x[0])/2,
-			y[0] - (y[1] - y[0])/2, y[-1] + (y[1] - y[0])/2,
-		),
-		cmap=colormap, vmin=0, vmax=1, origin="lower", zorder=10)
-	plt.contour(
-		x, y, np.sqrt(Z).T, levels=np.arange(0, np.max(Z), .3),
-		colors="k", linewidths=.5, zorder=20)
-	plt.plot(points_GD[:, 0], points_GD[:, 1], "#0e4c62", zorder=30)
-	plt.scatter(points_GD[::2, 0], points_GD[::2, 1], c="#0e4c62", marker="v", zorder=31)
-	plt.plot(points_HMC[:, 0], points_HMC[:, 1], "#46014f", zorder=32)
-	plt.scatter(points_HMC[::50, 0], points_HMC[::50, 1], c="#46014f", marker="o", zorder=33)
-	plt.xlim(x[0], x[-1])
-	plt.ylim(y[0], y[-1])
-	plt.xticks([])
-	plt.yticks([])
-	plt.show()
+	os.makedirs("results/", exist_ok=True)
+	for tag, show in [("gradient", {"GD"}), ("hamiltonian", {"HMC"}), ("both", {"GD", "HMC"})]:
+		os.makedirs(f"results/{tag}-frames/", exist_ok=True)
+		for filename in os.listdir(f"results/{tag}-frames/"):
+			os.remove(f"results/{tag}-frames/{filename}")
+
+		plt.figure(figsize=((x[-1] - x[0])*3 + .4, (y[-1] - y[0])*3 + .4))
+		plt.imshow(
+			np.exp(-Z).T, extent=(
+				x[0] - (x[1] - x[0])/2, x[-1] + (x[1] - x[0])/2,
+				y[0] - (y[1] - y[0])/2, y[-1] + (y[1] - y[0])/2,
+			),
+			cmap=colormap, vmin=0, vmax=1, origin="lower", zorder=10)
+		plt.contour(
+			x, y, np.sqrt(Z).T, levels=np.arange(0, np.max(Z), .3),
+			colors="k", linewidths=.5, zorder=20)
+		line_GD, = plt.plot([], [], GD_COLOR, zorder=30)
+		dot_GD = None
+		line_HMC, = plt.plot([], [], HMC_COLOR, zorder=32)
+		dots_HMC = None
+		plt.xlim(x[0], x[-1])
+		plt.ylim(y[0], y[-1])
+		plt.axis("off")
+		plt.tight_layout()
+		for i in range(0, len(points_HMC), STEPS_PER_FRAME):
+			if "GD" in show and i < len(points_GD):
+				line_GD.set_xdata(points_GD[:i + 1, 0])
+				line_GD.set_ydata(points_GD[:i + 1, 1])
+				if dot_GD is not None:
+					dot_GD.remove()
+				dot_GD = plt.scatter(
+					points_GD[i, 0], points_GD[i, 1],
+					c=GD_COLOR, marker="v", zorder=31)
+			if "HMC" in show:
+				line_HMC.set_xdata(points_HMC[:i + 1, 0])
+				line_HMC.set_ydata(points_HMC[:i + 1, 1])
+				indices = np.concatenate([np.arange(0, i, 50), [i]])
+				if dots_HMC is not None:
+					dots_HMC.remove()
+				dots_HMC = plt.scatter(
+					points_HMC[indices, 0], points_HMC[indices, 1],
+					c=HMC_COLOR, marker="o", zorder=33)
+			plt.savefig(f"results/{tag}-frames/{i//STEPS_PER_FRAME:03d}.png")
+			plt.pause(.1)
+		plt.savefig(f"results/{tag}-static.png")
+		plt.savefig(f"results/{tag}-static.svg")
+		plt.close()
 
 
 def gradient_descent(grad_x_func, grad_y_func, start):
 	steps_per_step = 10
 	state = np.array(start)
 	history = [start]
-	for i in range(math.ceil(4.5/TIME_STEP*steps_per_step)):
+	for i in range(math.ceil(3.0/TIME_STEP*steps_per_step)):
 		gradient = np.array([grad_x_func(*state)[0, 0], grad_y_func(*state)[0, 0]])
 		velocity = -gradient/max(.5, np.hypot(*gradient))
 		state = state + velocity*TIME_STEP/steps_per_step
