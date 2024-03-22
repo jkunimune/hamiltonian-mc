@@ -6,7 +6,7 @@ from scipy import interpolate
 
 from colormap import colormap
 
-np.random.seed(9)
+np.random.seed(10)
 
 
 TIME_STEP = .01
@@ -28,7 +28,7 @@ def main():
 	start = (0.9, 0.4)
 
 	points_GD = gradient_descent(grad_x_func, grad_y_func, start)
-	points_HMC = hamiltonian_monte_carlo(grad_x_func, grad_y_func, start)
+	points_HMC = hamiltonian_monte_carlo(cost_func, grad_x_func, grad_y_func, start)
 
 	plt.imshow(
 		np.exp(-Z).T, extent=(
@@ -63,21 +63,27 @@ def gradient_descent(grad_x_func, grad_y_func, start):
 	return np.array(history)
 
 
-def hamiltonian_monte_carlo(grad_x_func, grad_y_func, start):
+def hamiltonian_monte_carlo(potential_func, force_x_func, force_y_func, start):
 	steps_per_step = 10
 	steps_per_collision = 50
 	state = np.array(start)
 	history = [state]
-	gradient = np.array([grad_x_func(*state)[0, 0], grad_y_func(*state)[0, 0]])
+	gradient = np.array([force_x_func(*state)[0, 0], force_y_func(*state)[0, 0]])
 	velocity = -gradient/np.hypot(*gradient)
-	for i in range(math.ceil(4.5/TIME_STEP/steps_per_collision)):
+	while len(history) < math.ceil(4.5/TIME_STEP):
+		old_state = state
+		old_energy = 1/2*np.sum(velocity**2) + potential_func(*state)[0, 0]
 		for j in range(math.ceil(steps_per_collision*steps_per_step)):
-			gradient = np.array([grad_x_func(*state)[0, 0], grad_y_func(*state)[0, 0]])
+			gradient = np.array([force_x_func(*state)[0, 0], force_y_func(*state)[0, 0]])
 			state = state + velocity*TIME_STEP/steps_per_step/2
 			velocity = velocity - gradient*TIME_STEP/steps_per_step
 			state = state + velocity*TIME_STEP/steps_per_step/2
 			if (j + 1)%steps_per_step == 0:
 				history.append(state)
+		new_energy = 1/2*np.sum(velocity**2) + potential_func(*state)[0, 0]
+		a = min(1, np.exp(old_energy - new_energy))
+		if np.random.random() >= a:
+			state = old_state
 		velocity = np.random.normal(0, 1, 2)
 	return np.array(history)
 
