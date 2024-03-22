@@ -6,32 +6,35 @@ from scipy import interpolate
 
 from colormap import colormap
 
-np.random.seed(2)
+np.random.seed(9)
 
 
 TIME_STEP = .01
 
 
 def main():
-	x = np.linspace(-1, 1, 201)
-	y = np.linspace(-1, 1, 201)
+	x = np.linspace(-1.3, 1.7, 201)
+	y = np.linspace(-0.65, 0.9, 201)
 	X, Y = np.meshgrid(x, y, indexing="ij")
-	angle = .9
+	angle = .25
 	X_rot = X*np.cos(angle) - (Y + .1)*np.sin(angle)
 	Y_rot = X*np.sin(angle) + (Y + .1)*np.cos(angle)
-	Y_valley = -.4 + X_rot**2/2 + X_rot**3/6
+	Y_valley = X_rot**2/2 + X_rot**3/6
 	Z = 20*(Y_rot - Y_valley)**2 + 2*X_rot**2
 	cost_func = interpolate.RectBivariateSpline(x, y, Z)
 	grad_x_func = cost_func.partial_derivative(1, 0)
 	grad_y_func = cost_func.partial_derivative(0, 1)
 
-	start = (.5, -.5)
+	start = (0.9, 0.4)
 
 	points_GD = gradient_descent(grad_x_func, grad_y_func, start)
 	points_HMC = hamiltonian_monte_carlo(grad_x_func, grad_y_func, start)
 
 	plt.imshow(
-		np.exp(-Z).T, extent=(-1.005, 1.005, -1.005, 1.005),
+		np.exp(-Z).T, extent=(
+			x[0] - (x[1] - x[0])/2, x[-1] + (x[1] - x[0])/2,
+			y[0] - (y[1] - y[0])/2, y[-1] + (y[1] - y[0])/2,
+		),
 		cmap=colormap, vmin=0, vmax=1, origin="lower", zorder=10)
 	plt.contour(
 		x, y, np.sqrt(Z).T, levels=np.arange(0, np.max(Z), .3),
@@ -40,7 +43,8 @@ def main():
 	plt.scatter(points_GD[::2, 0], points_GD[::2, 1], c="#0c2766", zorder=31)
 	plt.plot(points_HMC[:, 0], points_HMC[:, 1], "#0c2766", zorder=32)
 	plt.scatter(points_HMC[::50, 0], points_HMC[::50, 1], c="#0c2766", zorder=33)
-	plt.axis([-1, 1, -1, 1])
+	plt.xlim(x[0], x[-1])
+	plt.ylim(y[0], y[-1])
 	plt.xticks([])
 	plt.yticks([])
 	plt.show()
