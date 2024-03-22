@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from scipy import interpolate
 
+from colormap import colormap
 
 np.random.seed(2)
 
@@ -29,12 +30,16 @@ def main():
 	points_GD = gradient_descent(grad_x_func, grad_y_func, start)
 	points_HMC = hamiltonian_monte_carlo(grad_x_func, grad_y_func, start)
 
-	plt.imshow(np.exp(-Z).T, extent=(-1.005, 1.005, -1.005, 1.005), vmin=0, vmax=1, origin="lower", zorder=10)
-	plt.contour(x, y, np.sqrt(Z).T, levels=np.arange(0, np.max(Z), .3), colors="k", linewidths=1, zorder=20)
-	plt.plot(points_GD[:, 0], points_GD[:, 1], "-", zorder=30)
-	plt.plot(points_GD[::2, 0], points_GD[::2, 1], "o", zorder=31)
-	plt.plot(points_HMC[:, 0], points_HMC[:, 1], "-", zorder=32)
-	plt.plot(points_HMC[::50, 0], points_HMC[::50, 1], "o", zorder=33)
+	plt.imshow(
+		np.exp(-Z).T, extent=(-1.005, 1.005, -1.005, 1.005),
+		cmap=colormap, vmin=0, vmax=1, origin="lower", zorder=10)
+	plt.contour(
+		x, y, np.sqrt(Z).T, levels=np.arange(0, np.max(Z), .3),
+		colors="k", linewidths=.5, zorder=20)
+	plt.plot(points_GD[:, 0], points_GD[:, 1], "#0c2766", zorder=30)
+	plt.scatter(points_GD[::2, 0], points_GD[::2, 1], c="#0c2766", zorder=31)
+	plt.plot(points_HMC[:, 0], points_HMC[:, 1], "#0c2766", zorder=32)
+	plt.scatter(points_HMC[::50, 0], points_HMC[::50, 1], c="#0c2766", zorder=33)
 	plt.axis([-1, 1, -1, 1])
 	plt.xticks([])
 	plt.yticks([])
