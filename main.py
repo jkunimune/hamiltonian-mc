@@ -56,10 +56,13 @@ def main():
 					x[0] - (x[1] - x[0])/2, x[-1] + (x[1] - x[0])/2,
 					y[0] - (y[1] - y[0])/2, y[-1] + (y[1] - y[0])/2,
 				),
-				cmap=colormap, vmin=0, vmax=1, origin="lower", zorder=0)
+				cmap=colormap, vmin=0, vmax=1, origin="lower", zorder=0,
+				interpolation="bilinear"
+			)
 			axes.contour(
 				x, y, exp(-Z).T, levels=linspace(0, 1, 16)[0::2],
-				colors="k", linewidths=.5, zorder=20)
+				colors="k", linewidths=.5, zorder=20
+			)
 			if "GD" in show:
 				line_GD, = axes.plot([], [], GD_COLOR, zorder=30, linewidth=1.5)
 			if "HMC" in show:
@@ -103,7 +106,7 @@ def main():
 		if line_HMC is not None:
 			line_HMC.set_xdata(points_HMC[:, 0])
 			line_HMC.set_ydata(points_HMC[:, 1])
-		plt.savefig(f"results/{tag}-static.png", dpi=160)
+		plt.savefig(f"results/{tag}-static.png", dpi=320)
 		plt.savefig(f"results/{tag}-static.svg")
 		plt.close()
 
