@@ -14,6 +14,7 @@ random.seed(10)
 
 TIME_STEP = .01
 STEPS_PER_FRAME = 2
+TRAIL_LENGTH = 24
 GD_COLOR = "#0e4c62"
 HMC_COLOR = "#46014f"
 
@@ -67,30 +68,39 @@ def main():
 		plt.tight_layout()
 		num_frames = 0
 		for i in range(0, len(points_HMC), STEPS_PER_FRAME):
-			if not any("HMC" in show for show in plots) and i >= len(points_GD):
+			if line_HMC is None and i >= len(points_GD):
 				break
 			for axes, show in zip(axeses[:, 0], plots):
-				if "GD" in show and i < len(points_GD):
-					line_GD.set_xdata(points_GD[:i + 1, 0])
-					line_GD.set_ydata(points_GD[:i + 1, 1])
+				if "GD" in show:
+					line_GD.set_xdata(points_GD[max(0, i - TRAIL_LENGTH):min(i + 1, len(points_GD)), 0])
+					line_GD.set_ydata(points_GD[max(0, i - TRAIL_LENGTH):min(i + 1, len(points_GD)), 1])
 					if dot_GD is not None:
 						dot_GD.remove()
 					dot_GD = axes.scatter(
-						points_GD[i, 0], points_GD[i, 1],
+						points_GD[min(i, len(points_GD) - 1), 0],
+						points_GD[min(i, len(points_GD) - 1), 1],
 						c=GD_COLOR, marker="v", zorder=31)
 				if "HMC" in show:
-					line_HMC.set_xdata(points_HMC[:i + 1, 0])
-					line_HMC.set_ydata(points_HMC[:i + 1, 1])
+					line_HMC.set_xdata(points_HMC[max(0, i - TRAIL_LENGTH):i + 1, 0])
+					line_HMC.set_ydata(points_HMC[max(0, i - TRAIL_LENGTH):i + 1, 1])
 					indices = concatenate([arange(0, i, 50), [i]])
 					if dots_HMC is not None:
 						dots_HMC.remove()
 					dots_HMC = axes.scatter(
-						points_HMC[indices, 0], points_HMC[indices, 1],
+						points_HMC[indices, 0],
+						points_HMC[indices, 1],
 						c=HMC_COLOR, marker="o", zorder=33)
 			plt.savefig(f"results/{tag}-frames/{i//STEPS_PER_FRAME:03d}.png")
 			num_frames += 1
 
 		make_gif(f"results/{tag}-frames/", f"results/{tag}-animated", num_frames, 12)
+
+		if line_GD is not None:
+			line_GD.set_xdata(points_GD[:, 0])
+			line_GD.set_ydata(points_GD[:, 1])
+		if line_HMC is not None:
+			line_HMC.set_xdata(points_HMC[:, 0])
+			line_HMC.set_ydata(points_HMC[:, 1])
 		plt.savefig(f"results/{tag}-static.png")
 		plt.savefig(f"results/{tag}-static.svg")
 		plt.close()
