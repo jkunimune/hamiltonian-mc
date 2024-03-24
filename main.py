@@ -46,7 +46,9 @@ def main():
 
 		fig, axeses = plt.subplots(
 			len(plots), 1, squeeze=False,
-			figsize=((x[-1] - x[0])*3 + .4, (y[-1] - y[0])*3*len(plots) + .4))
+			figsize=((x[-1] - x[0])*3 + .1, (y[-1] - y[0])*3*len(plots) + .06*(len(plots) - 1) + .1),
+			gridspec_kw=dict(left=.007, right=.993, bottom=0, top=1, hspace=0)
+		)
 		line_GD, dot_GD, line_HMC, dots_HMC = None, None, None, None
 		for axes, show in zip(axeses[:, 0], plots):
 			axes.imshow(
@@ -54,7 +56,7 @@ def main():
 					x[0] - (x[1] - x[0])/2, x[-1] + (x[1] - x[0])/2,
 					y[0] - (y[1] - y[0])/2, y[-1] + (y[1] - y[0])/2,
 				),
-				cmap=colormap, vmin=0, vmax=1, origin="lower", zorder=10)
+				cmap=colormap, vmin=0, vmax=1, origin="lower", zorder=0)
 			axes.contour(
 				x, y, exp(-Z).T, levels=linspace(0, 1, 16)[0::2],
 				colors="k", linewidths=.5, zorder=20)
@@ -64,8 +66,8 @@ def main():
 				line_HMC, = axes.plot([], [], HMC_COLOR, zorder=32)
 			axes.set_xlim(x[0], x[-1])
 			axes.set_ylim(y[0], y[-1])
-			axes.axis("off")
-		plt.tight_layout()
+			axes.set_xticks([])
+			axes.set_yticks([])
 		num_frames = 0
 		for i in range(0, len(points_HMC), STEPS_PER_FRAME):
 			if line_HMC is None and i >= len(points_GD):
