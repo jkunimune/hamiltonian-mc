@@ -37,50 +37,55 @@ def main():
 	points_HMC = hamiltonian_monte_carlo(cost_func, grad_x_func, grad_y_func, start)
 
 	os.makedirs("results/", exist_ok=True)
-	for tag, show in [("gradient", {"GD"}), ("hamiltonian", {"HMC"}), ("both", {"GD", "HMC"})]:
+	for tag, plots in [("gradient", [{"GD"}]), ("hamiltonian", [{"HMC"}]), ("overlaid", [{"GD", "HMC"}]), ("stacked", [{"GD"}, {"HMC"}])]:
 		os.makedirs(f"results/{tag}-frames/", exist_ok=True)
 		for filename in os.listdir(f"results/{tag}-frames/"):
 			os.remove(f"results/{tag}-frames/{filename}")
 
-		plt.figure(figsize=((x[-1] - x[0])*3 + .4, (y[-1] - y[0])*3 + .4))
-		plt.imshow(
-			exp(-Z).T, extent=(
-				x[0] - (x[1] - x[0])/2, x[-1] + (x[1] - x[0])/2,
-				y[0] - (y[1] - y[0])/2, y[-1] + (y[1] - y[0])/2,
-			),
-			cmap=colormap, vmin=0, vmax=1, origin="lower", zorder=10)
-		plt.contour(
-			x, y, exp(-Z).T, levels=linspace(0, 1, 16)[0::2],
-			colors="k", linewidths=.5, zorder=20)
-		line_GD, = plt.plot([], [], GD_COLOR, zorder=30)
-		dot_GD = None
-		line_HMC, = plt.plot([], [], HMC_COLOR, zorder=32)
-		dots_HMC = None
-		plt.xlim(x[0], x[-1])
-		plt.ylim(y[0], y[-1])
-		plt.axis("off")
+		fig, axeses = plt.subplots(
+			len(plots), 1, squeeze=False,
+			figsize=((x[-1] - x[0])*3 + .4, (y[-1] - y[0])*3*len(plots) + .4))
+		line_GD, dot_GD, line_HMC, dots_HMC = None, None, None, None
+		for axes, show in zip(axeses[:, 0], plots):
+			axes.imshow(
+				exp(-Z).T, extent=(
+					x[0] - (x[1] - x[0])/2, x[-1] + (x[1] - x[0])/2,
+					y[0] - (y[1] - y[0])/2, y[-1] + (y[1] - y[0])/2,
+				),
+				cmap=colormap, vmin=0, vmax=1, origin="lower", zorder=10)
+			axes.contour(
+				x, y, exp(-Z).T, levels=linspace(0, 1, 16)[0::2],
+				colors="k", linewidths=.5, zorder=20)
+			if "GD" in show:
+				line_GD, = axes.plot([], [], GD_COLOR, zorder=30)
+			if "HMC" in show:
+				line_HMC, = axes.plot([], [], HMC_COLOR, zorder=32)
+			axes.set_xlim(x[0], x[-1])
+			axes.set_ylim(y[0], y[-1])
+			axes.axis("off")
 		plt.tight_layout()
 		num_frames = 0
 		for i in range(0, len(points_HMC), STEPS_PER_FRAME):
-			if "HMC" not in show and i >= len(points_GD):
+			if not any("HMC" in show for show in plots) and i >= len(points_GD):
 				break
-			if "GD" in show and i < len(points_GD):
-				line_GD.set_xdata(points_GD[:i + 1, 0])
-				line_GD.set_ydata(points_GD[:i + 1, 1])
-				if dot_GD is not None:
-					dot_GD.remove()
-				dot_GD = plt.scatter(
-					points_GD[i, 0], points_GD[i, 1],
-					c=GD_COLOR, marker="v", zorder=31)
-			if "HMC" in show:
-				line_HMC.set_xdata(points_HMC[:i + 1, 0])
-				line_HMC.set_ydata(points_HMC[:i + 1, 1])
-				indices = concatenate([arange(0, i, 50), [i]])
-				if dots_HMC is not None:
-					dots_HMC.remove()
-				dots_HMC = plt.scatter(
-					points_HMC[indices, 0], points_HMC[indices, 1],
-					c=HMC_COLOR, marker="o", zorder=33)
+			for axes, show in zip(axeses[:, 0], plots):
+				if "GD" in show and i < len(points_GD):
+					line_GD.set_xdata(points_GD[:i + 1, 0])
+					line_GD.set_ydata(points_GD[:i + 1, 1])
+					if dot_GD is not None:
+						dot_GD.remove()
+					dot_GD = axes.scatter(
+						points_GD[i, 0], points_GD[i, 1],
+						c=GD_COLOR, marker="v", zorder=31)
+				if "HMC" in show:
+					line_HMC.set_xdata(points_HMC[:i + 1, 0])
+					line_HMC.set_ydata(points_HMC[:i + 1, 1])
+					indices = concatenate([arange(0, i, 50), [i]])
+					if dots_HMC is not None:
+						dots_HMC.remove()
+					dots_HMC = axes.scatter(
+						points_HMC[indices, 0], points_HMC[indices, 1],
+						c=HMC_COLOR, marker="o", zorder=33)
 			plt.savefig(f"results/{tag}-frames/{i//STEPS_PER_FRAME:03d}.png")
 			plt.pause(.01)
 			num_frames += 1
