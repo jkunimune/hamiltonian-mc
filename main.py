@@ -59,6 +59,8 @@ def main():
 		plt.axis("off")
 		plt.tight_layout()
 		for i in range(0, len(points_HMC), STEPS_PER_FRAME):
+			if "HMC" not in show and i >= len(points_GD) + 12:
+				break
 			if "GD" in show and i < len(points_GD):
 				line_GD.set_xdata(points_GD[:i + 1, 0])
 				line_GD.set_ydata(points_GD[:i + 1, 1])
@@ -87,9 +89,9 @@ def gradient_descent(grad_x_func, grad_y_func, start):
 	steps_per_step = 10
 	state = np.array(start)
 	history = [start]
-	for i in range(math.ceil(3.0/TIME_STEP*steps_per_step)):
+	for i in range(math.ceil(1.5/TIME_STEP*steps_per_step)):
 		gradient = np.array([grad_x_func(*state)[0, 0], grad_y_func(*state)[0, 0]])
-		velocity = -gradient/max(.5, np.hypot(*gradient))
+		velocity = -gradient/max(.3, np.hypot(*gradient))
 		state = state + velocity*TIME_STEP/steps_per_step
 		if (i + 1)%steps_per_step == 0:
 			history.append(state)
