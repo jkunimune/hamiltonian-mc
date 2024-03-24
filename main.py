@@ -15,8 +15,8 @@ random.seed(10)
 TIME_STEP = .01
 STEPS_PER_FRAME = 2
 TRAIL_LENGTH = 24
-GD_COLOR = "#0e4c62"
-HMC_COLOR = "#46014f"
+GD_COLOR = "#0d4dae"
+HMC_COLOR = "#7d0100"
 
 
 def main():
@@ -61,9 +61,9 @@ def main():
 				x, y, exp(-Z).T, levels=linspace(0, 1, 16)[0::2],
 				colors="k", linewidths=.5, zorder=20)
 			if "GD" in show:
-				line_GD, = axes.plot([], [], GD_COLOR, zorder=30)
+				line_GD, = axes.plot([], [], GD_COLOR, zorder=30, linewidth=1.5)
 			if "HMC" in show:
-				line_HMC, = axes.plot([], [], HMC_COLOR, zorder=32)
+				line_HMC, = axes.plot([], [], HMC_COLOR, zorder=32, linewidth=1.5)
 			axes.set_xlim(x[0], x[-1])
 			axes.set_ylim(y[0], y[-1])
 			axes.set_xticks([])
@@ -81,7 +81,7 @@ def main():
 					dot_GD = axes.scatter(
 						points_GD[min(i, len(points_GD) - 1), 0],
 						points_GD[min(i, len(points_GD) - 1), 1],
-						c=GD_COLOR, marker="v", zorder=31)
+						c=GD_COLOR, marker="v", s=100, zorder=31)
 				if "HMC" in show:
 					line_HMC.set_xdata(points_HMC[max(0, i - TRAIL_LENGTH):i + 1, 0])
 					line_HMC.set_ydata(points_HMC[max(0, i - TRAIL_LENGTH):i + 1, 1])
@@ -91,8 +91,8 @@ def main():
 					dots_HMC = axes.scatter(
 						points_HMC[indices, 0],
 						points_HMC[indices, 1],
-						c=HMC_COLOR, marker="o", zorder=33)
-			plt.savefig(f"results/{tag}-frames/{i//STEPS_PER_FRAME:03d}.png")
+						c=HMC_COLOR, marker="o", s=80, zorder=33)
+			plt.savefig(f"results/{tag}-frames/{i//STEPS_PER_FRAME:03d}.png", dpi=80)
 			num_frames += 1
 
 		make_gif(f"results/{tag}-frames/", f"results/{tag}-animated", num_frames, 12)
@@ -103,7 +103,7 @@ def main():
 		if line_HMC is not None:
 			line_HMC.set_xdata(points_HMC[:, 0])
 			line_HMC.set_ydata(points_HMC[:, 1])
-		plt.savefig(f"results/{tag}-static.png")
+		plt.savefig(f"results/{tag}-static.png", dpi=160)
 		plt.savefig(f"results/{tag}-static.svg")
 		plt.close()
 
