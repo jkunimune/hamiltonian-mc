@@ -2,9 +2,8 @@ import math
 import os
 
 import matplotlib.pyplot as plt
-import numpy as np
 from imageio.v2 import imread, mimsave
-from numpy import newaxis, full, shape, uint8, linspace, meshgrid, cos, sin, sqrt, arange, concatenate, array, hypot, \
+from numpy import newaxis, full, shape, uint8, linspace, meshgrid, cos, sin, arange, concatenate, array, hypot, \
 	exp, random
 from scipy import interpolate
 
@@ -20,8 +19,8 @@ HMC_COLOR = "#46014f"
 
 
 def main():
-	x = linspace(-0.9, 1.3, 201)
-	y = linspace(-0.55, 0.6, 101)
+	x = linspace(-1.00, 1.25, 201)
+	y = linspace(-0.50, 0.65, 101)
 	X, Y = meshgrid(x, y, indexing="ij")
 	angle = .25
 	X_rot = X*cos(angle) - (Y + .1)*sin(angle)
@@ -51,7 +50,7 @@ def main():
 			),
 			cmap=colormap, vmin=0, vmax=1, origin="lower", zorder=10)
 		plt.contour(
-			x, y, sqrt(Z).T, levels=arange(0, np.max(Z), .3),
+			x, y, exp(-Z).T, levels=linspace(0, 1, 16)[0::2],
 			colors="k", linewidths=.5, zorder=20)
 		line_GD, = plt.plot([], [], GD_COLOR, zorder=30)
 		dot_GD = None
