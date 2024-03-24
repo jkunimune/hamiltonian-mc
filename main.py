@@ -38,6 +38,7 @@ def main():
 
 	os.makedirs("results/", exist_ok=True)
 	for tag, plots in [("gradient", [{"GD"}]), ("hamiltonian", [{"HMC"}]), ("overlaid", [{"GD", "HMC"}]), ("stacked", [{"GD"}, {"HMC"}])]:
+		print(f"animating {tag} plot...")
 		os.makedirs(f"results/{tag}-frames/", exist_ok=True)
 		for filename in os.listdir(f"results/{tag}-frames/"):
 			os.remove(f"results/{tag}-frames/{filename}")
@@ -87,7 +88,6 @@ def main():
 						points_HMC[indices, 0], points_HMC[indices, 1],
 						c=HMC_COLOR, marker="o", zorder=33)
 			plt.savefig(f"results/{tag}-frames/{i//STEPS_PER_FRAME:03d}.png")
-			plt.pause(.01)
 			num_frames += 1
 
 		make_gif(f"results/{tag}-frames/", f"results/{tag}-animated", num_frames, 12)
