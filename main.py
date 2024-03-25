@@ -15,6 +15,7 @@ random.seed(10)
 TIME_STEP = .01
 STEPS_PER_FRAME = 2
 TRAIL_LENGTH = 24
+STEPS_PER_COLLISION = 50
 GD_COLOR = "#0d4dae"
 HMC_COLOR = "#7d0100"
 
@@ -88,7 +89,7 @@ def main():
 				if "HMC" in show:
 					line_HMC.set_xdata(points_HMC[max(0, i - TRAIL_LENGTH):i + 1, 0])
 					line_HMC.set_ydata(points_HMC[max(0, i - TRAIL_LENGTH):i + 1, 1])
-					indices = concatenate([arange(0, i, 50), [i]])
+					indices = concatenate([arange(0, i, STEPS_PER_COLLISION), [i]])
 					if dots_HMC is not None:
 						dots_HMC.remove()
 					dots_HMC = axes.scatter(
@@ -126,7 +127,6 @@ def gradient_descent(grad_x_func, grad_y_func, start):
 
 def hamiltonian_monte_carlo(potential_func, force_x_func, force_y_func, start):
 	steps_per_step = 10
-	steps_per_collision = 50
 	state = array(start)
 	history = [state]
 	gradient = array([force_x_func(*state)[0, 0], force_y_func(*state)[0, 0]])
@@ -134,7 +134,7 @@ def hamiltonian_monte_carlo(potential_func, force_x_func, force_y_func, start):
 	while len(history) < math.ceil(4.5/TIME_STEP):
 		old_state = state
 		old_energy = 1/2*sum(velocity**2) + potential_func(*state)[0, 0]
-		for j in range(math.ceil(steps_per_collision*steps_per_step)):
+		for j in range(STEPS_PER_COLLISION*steps_per_step):
 			gradient = array([force_x_func(*state)[0, 0], force_y_func(*state)[0, 0]])
 			state = state + velocity*TIME_STEP/steps_per_step/2
 			velocity = velocity - gradient*TIME_STEP/steps_per_step
