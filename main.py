@@ -145,6 +145,7 @@ def hamiltonian_monte_carlo(potential_func, force_x_func, force_y_func, start):
 		a = min(1, exp(old_energy - new_energy))
 		if random.random() >= a:
 			state = old_state
+			history = history[:-STEPS_PER_COLLISION]
 		velocity = random.normal(0, 1, 2)
 	return array(history)
 
